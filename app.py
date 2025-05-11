@@ -7,6 +7,14 @@ import requests
 from helper import create_excel
 from decimal import Decimal, getcontext
 from jinja2 import Template
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load variables from .env
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY") #CREATE A secret key
+
 
 # Set a high precision for financial calculations
 getcontext().prec = 28
@@ -14,6 +22,8 @@ getcontext().prec = 28
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = 'AylaJunoCats'  # Required to use sessions
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+
 
 # Registering a custom filter for string formatting and rounding
 @app.template_filter('stringformat')
@@ -168,5 +178,5 @@ def download():
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+    # app.run(debug=True)
