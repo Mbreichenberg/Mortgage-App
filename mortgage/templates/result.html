@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage Amortization Results</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="result">
+
+<svg style="display: none;">
+    <filter id="roughPaper">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" />
+    </filter>
+</svg>
+
+<div class="container mt-4 help">
+
+    <h1 class="text-center mb-4">Mortgage Amortization Schedule</h1>
+
+    <h3 class="my-3 text-center">Your Monthly Payment: {{ currency_symbol }}{{ '{:,.2f}'.format(monthly_payment) }}</h3>
+    <h4 class="my-3 text-center">Total Principal Paid: {{ currency_symbol }}{{ '{:,.2f}'.format(total_principal) }}</h4>
+    <h4 class="my-3 text-center">Total Interest Paid: {{ currency_symbol }}{{ '{:,.2f}'.format(total_interest) }}</h4>
+
+    <div class="my-4 chart-container p-3 rounded" style="background-color: #ffe5b4;">
+        <canvas id="amortizationChart"></canvas>
+        <div class="btn-group my-3" role="group">
+            <button class="btn btn-secondary" onclick="showAll()">Show All</button>
+            <button class="btn btn-success" onclick="toggleDatasetVisibility('Principal Payment')">Show Principal</button>
+            <button class="btn btn-danger" onclick="toggleDatasetVisibility('Interest Payment')">Show Interest</button>
+            <button class="btn btn-primary" onclick="toggleDatasetVisibility('Remaining Balance')">Show Balance</button>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <form method="POST" action="/convert_results">
+            <label for="currencyDropdown" class="form-label">Select Currency:</label>
+            <select id="currencyDropdown" name="target_currency" class="form-select">
+                <option value="USD" {% if currency_symbol == '$' %}selected{% endif %}>USD</option>
+                <option value="BRL" {% if currency_symbol == 'R$' %}selected{% endif %}>BRL</option>
+                <option value="EUR" {% if currency_symbol == '€' %}selected{% endif %}>EUR</option>
+            </select>
+
+            <input type="hidden" name="base_currency" value="{{ session['base_currency'] }}">
+            <input type="hidden" name="principal" value="{{ principal }}">
+            <input type="hidden" name="interest_rate" value="{{ annual_interest_rate }}">
+            <input type="hidden" name="years" value="{{ years }}">
+
+            <button type="submit" class="btn btn-primary mt-2">Convert</button>
+        </form>
+    </div>
+
+    <div class="accordion my-4" id="amortizationAccordion">
+        {% set months_in_year = 12 %}
+        {% set total_years = (schedule|length // months_in_year) + (1 if schedule|length % months_in_year != 0 else 0) %}
+        {% for year in range(1, total_years + 1) %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{ year }}">
+                <button class="accordion-button {% if year != 1 %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ year }}" aria-expanded="{{ 'true' if year == 1 else 'false' }}" aria-controls="collapse{{ year }}">
+                    Year {{ year }}
+                </button>
+            </h2>
+            <div id="collapse{{ year }}" class="accordion-collapse collapse {% if year == 1 %}show{% endif %}" aria-labelledby="heading{{ year }}" data-bs-parent="#amortizationAccordion">
+                <div class="accordion-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Payment ({{ currency_symbol }})</th>
+                                    <th>Interest ({{ currency_symbol }})</th>
+                                    <th>Principal ({{ currency_symbol }})</th>
+                                    <th>Balance ({{ currency_symbol }})</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in schedule[(year-1)*months_in_year : year*months_in_year] %}
+                                <tr>
+                                    <td>{{ row["Month"] }}</td>
+                                    <td>{{ '%.2f' % row["Payment"] }}</td>
+                                    <td>{{ '%.2f' % row["Interest"] }}</td>
+                                    <td>{{ '%.2f' % row["Principal"] }}</td>
+                                    <td>{{ '%.2f' % row["Balance"] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="d-flex flex-column align-items-center my-4">
+        <div class="d-flex gap-3">
+            <form method="POST" action="/download">
+                <input type="hidden" name="principal" value="{{ principal }}">
+                <input type="hidden" name="interest_rate" value="{{ annual_interest_rate }}">
+                <input type="hidden" name="years" value="{{ years }}">
+                <input type="hidden" name="currency" value="{{ currency_choice }}">
+                <button class="btn btn-primary btn-lg" type="submit">Download as Spreadsheet</button>
+            </form>
+        </div>
+        <a href="/" class="rough-button">Back to Calculator</a>
+    </div>
+
+    <a id="coffee2" href="https://www.buymeacoffee.com/mbreichenberg" target="_blank">
+        <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px; width: 217px;" >
+    </a>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    var ctx = document.getElementById('amortizationChart').getContext('2d');
+
+    var amortizationChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [
+                {% for row in schedule %}
+                    '{{ row["Month"] }}',
+                {% endfor %}
+            ],
+            datasets: [
+                {
+                    label: 'Principal Payment',
+                    data: [
+                        {% for row in schedule %}
+                            {{ row["Principal"] | float }},
+                        {% endfor %}
+                    ],
+                    borderColor: 'green',
+                    backgroundColor: 'rgba(0, 128, 0, 0.2)',
+                    fill: true,
+                    hidden: false
+                },
+                {
+                    label: 'Interest Payment',
+                    data: [
+                        {% for row in schedule %}
+                            {{ row["Interest"] | float }},
+                        {% endfor %}
+                    ],
+                    borderColor: 'red',
+                    backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                    fill: true,
+                    hidden: false
+                },
+                {
+                    label: 'Remaining Balance',
+                    data: [
+                        {% for row in schedule %}
+                            {{ row["Balance"] | float }},
+                        {% endfor %}
+                    ],
+                    borderColor: 'blue',
+                    backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                    fill: false,
+                    hidden: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Amortization Schedule Chart'
+                },
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    },
+                    onClick: function (e, legendItem) {
+                        const index = legendItem.datasetIndex;
+                        const meta = amortizationChart.getDatasetMeta(index);
+                        meta.hidden = meta.hidden === null ? true : !meta.hidden;
+                        amortizationChart.update();
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: '{{ currency_symbol }}'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    amortizationChart.data.datasets.forEach((dataset, index) => {
+        const meta = amortizationChart.getDatasetMeta(index);
+        meta.hidden = dataset.hidden || false;
+    });
+    amortizationChart.update();
+
+    function toggleDatasetVisibility(datasetLabel) {
+        const datasetIndex = amortizationChart.data.datasets.findIndex(
+            dataset => dataset.label === datasetLabel
+        );
+        if (datasetIndex !== -1) {
+            const meta = amortizationChart.getDatasetMeta(datasetIndex);
+            meta.hidden = meta.hidden === null ? true : !meta.hidden;
+            amortizationChart.update();
+        }
+    }
+
+    function showAll() {
+        amortizationChart.data.datasets.forEach((dataset, index) => {
+            const meta = amortizationChart.getDatasetMeta(index);
+            meta.hidden = false;
+        });
+        amortizationChart.update();
+    }
+</script>
+
+</body>
+</html>
