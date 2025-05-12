@@ -1,99 +1,98 @@
 /* --- Background and general body styles --- */
-html {
-    height: 100%;
+html, body {
+    margin: 0;
+    padding: 0;
     width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-}
-
-body {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    margin: 0;
-    padding: 0;
-    height: 100%;
+    min-height: 100vh;
     overflow-x: hidden;
     background-color: lightblue;
     opacity: 0;
     animation: fadeIn 2s ease forwards;
 }
 
-
-
-/* Scrolling background replaces body.index */
+/* === Index Page Background === */
 body.index {
-    background-image: url('/static/VWNY.png'); /* Update with your correct image path */
+    background-image: url('/static/VWNY.png'); /* Ensure this path is correct on your server */
     background-repeat: repeat-x;
     background-size: cover;
     background-position: 0 0;
-    animation: fadeIn 2s ease forwards, scrollBackground 300s linear infinite;
+
+    animation:
+        fadeIn 2s ease forwards,
+        scrollBackground 300s linear infinite;
+
     image-rendering: pixelated;
 }
 
-/* --- Animations --- */
-@keyframes scrollBackground {
-    0% {
-        background-position: 0 0;
-    }
-    100% {
-        background-position: -4000px 0; /* Adjust based on your image width */
-    }
-}
-
+/* === Animations === */
 @keyframes fadeIn {
     to {
         opacity: 1;
     }
 }
 
-/* --- Container and form styling --- */
+@keyframes scrollBackground {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: -4000px 0; /* Adjust this to your actual image width */
+    }
+}
+
+
+/* --- Container and Form Styling --- */
 .container {
     background-color: white;
-    padding: 30px;
+    padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Make it flexible */
+    max-width: 1200px; /* Increase max-width for larger screens */
+    margin: 0 auto;
 }
+
 
 form.form {
     text-align: center;
-    margin-top: 20px;
-    font-size: 18px;
-    padding: 10px 20px;
+    margin-top: 1.25rem;
+    font-size: 1.125rem;
+    padding: 0.625rem 1.25rem;
     font-family: 'Caveat', cursive;
 }
 
+
 .input_box {
-    margin-top: 20px;
-    font-size: 18px;
-    padding: 10px 20px;
+    margin-top: 1.25rem;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
     background-color: #fff4e6;
     border: 2px solid black;
     font-family: 'Caveat', cursive;
-    box-shadow: 3px 3px 0px 0px black;
+    box-shadow: 3px 3px 0 0 black;
+    width: 70%;
+    max-width: 320px;
+    box-sizing: border-box;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
-/* --- Typography --- */
 
+/* --- Typography --- */
 h1 {
-    text-align: center; /* Center the text horizontally */
-    font-family: 'Patrick Hand', cursive; /* Handwritten font */
-    font-size: 48px; /* Big, friendly size */
-    color: #222; /* Dark gray looks softer than black */
+    text-align: center;
+    font-family: 'Patrick Hand', cursive;
+    font-size: 48px; /* Big size for desktop */
+    color: #222;
     padding-top: 50px;
     padding-bottom: 20px;
     text-shadow: 3px 5px 5px rgba(0, 0, 0, 0.3);
-  }
-
-
-h3 {
-    color: #28a745;
+    margin: 0; /* To prevent excessive spacing */
 }
 
-h4 {
+h3, h4 {
     color: #28a745;
+    margin-bottom: 1rem; /* Ensures some space below headers */
 }
 
 .header {
@@ -210,3 +209,59 @@ canvas {
     justify-content: center;
 }
 
+@media (max-width: 768px) {
+
+    label {
+        color: white;
+    }
+
+    .header {
+        height: auto;
+        padding-top: 200px; /* Slightly increased */
+        position: relative;
+    }
+
+    .header img {
+        display: none;
+    }
+
+    h1 {
+        font-size: 30px;
+        color: white;
+        margin-top: 0;
+        margin-bottom: 30px;
+        padding-top: 0;
+        z-index: 2;
+        position: relative;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        height: auto;
+        padding-top: 180px; /* Slightly increased */
+        position: relative;
+    }
+
+    .header img {
+        display: none;
+    }
+
+    .header h1 {
+        font-size: 36px;
+    }
+
+    h1 {
+        font-size: 28px;
+        color: white;
+        margin-top: 0;
+        margin-bottom: 30px;
+        padding-top: 0;
+        z-index: 2;
+        position: relative;
+    }
+
+    label {
+        color: white;
+    }
+}
