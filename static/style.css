@@ -209,8 +209,99 @@ canvas {
     justify-content: center;
 }
 
-@media (max-width: 768px) {
+/* === Responsive Chart Styling === */
+.desktop-chart, .mobile-chart {
+    transition: display 0.3s ease;
+}
 
+/* === Media Queries for Tablet and Mobile === */
+@media only screen and (max-width: 1024px) {
+    /* Tablet-specific styles */
+    body.index {
+        background-size: auto 100%;
+        animation: 
+            fadeIn 2s ease forwards,
+            scrollBackground 200s linear infinite; /* Slightly faster for smaller screens */
+    }
+    
+    @keyframes scrollBackground {
+        0% {
+            background-position: 0 0;
+        }
+        100% {
+            background-position: -3000px 0; /* Adjusted for tablet width */
+        }
+    }
+    
+    .container {
+        padding: 1.5rem;
+    }
+    
+    h1 {
+        font-size: 40px;
+    }
+}
+
+@media only screen and (max-width: 767px) {
+    /* Mobile styles */
+    body.index {
+        background-size: auto 100%;
+        animation: 
+            fadeIn 2s ease forwards,
+            scrollBackground 150s linear infinite;
+    }
+    
+    @keyframes scrollBackground {
+        0% {
+            background-position: 0 0;
+        }
+        100% {
+            background-position: -2000px 0;
+        }
+    }
+    
+    .chart-container {
+        padding: 10px !important;
+        margin: 15px 0 !important;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 5px;
+        border-radius: 4px !important;
+    }
+    
+    h1 {
+        font-size: 1.7rem;
+        color: white;
+        margin-top: 0;
+        margin-bottom: 30px;
+        padding-top: 0;
+        z-index: 2;
+        position: relative;
+    }
+    
+    h3 {
+        font-size: 1.3rem;
+    }
+    
+    h4 {
+        font-size: 1.1rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+    
+    #coffee2 img {
+        height: 50px !important;
+        width: 180px !important;
+    }
+    
     label {
         color: white;
     }
@@ -224,9 +315,32 @@ canvas {
     .header img {
         display: none;
     }
+}
 
+@media only screen and (max-width: 480px) {
+    /* Small mobile styles */
+    body.index {
+        background-size: auto 100%;
+        animation: 
+            fadeIn 2s ease forwards,
+            scrollBackground 120s linear infinite; /* Even faster for smallest screens */
+    }
+    
+    @keyframes scrollBackground {
+        0% {
+            background-position: 0 0;
+        }
+        100% {
+            background-position: -1500px 0; /* Further reduced for smallest screens */
+        }
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
     h1 {
-        font-size: 30px;
+        font-size: 28px;
         color: white;
         margin-top: 0;
         margin-bottom: 30px;
@@ -234,12 +348,10 @@ canvas {
         z-index: 2;
         position: relative;
     }
-}
-
-@media (max-width: 480px) {
+    
     .header {
         height: auto;
-        padding-top: 180px; /* Slightly increased */
+        padding-top: 180px;
         position: relative;
     }
 
@@ -250,18 +362,20 @@ canvas {
     .header h1 {
         font-size: 36px;
     }
-
-    h1 {
-        font-size: 28px;
-        color: white;
-        margin-top: 0;
-        margin-bottom: 30px;
-        padding-top: 0;
-        z-index: 2;
-        position: relative;
+    
+    .accordion-button {
+        padding: 8px;
     }
-
+    
+    .table-responsive {
+        font-size: 0.7rem;
+    }
+    
     label {
         color: white;
+    }
+    
+    .input_box {
+        width: 90%;
     }
 }

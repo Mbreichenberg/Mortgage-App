@@ -27,7 +27,8 @@
     <h4 class="my-3 text-center">Total Principal Paid: {{ currency_symbol }}{{ '{:,.2f}'.format(total_principal) }}</h4>
     <h4 class="my-3 text-center">Total Interest Paid: {{ currency_symbol }}{{ '{:,.2f}'.format(total_interest) }}</h4>
 
-    <div class="my-4 chart-container p-3 rounded" style="background-color: #ffe5b4;">
+    <!-- Line chart for desktop/larger screens -->
+    <div class="my-4 chart-container p-3 rounded desktop-chart">
         <canvas id="amortizationChart"></canvas>
         <div class="btn-group my-3" role="group">
             <button class="btn btn-secondary" onclick="showAll()">Show All</button>
@@ -35,6 +36,12 @@
             <button class="btn btn-danger" onclick="toggleDatasetVisibility('Interest Payment')">Show Interest</button>
             <button class="btn btn-primary" onclick="toggleDatasetVisibility('Remaining Balance')">Show Balance</button>
         </div>
+    </div>
+
+    <!-- Pie chart for mobile devices -->
+    <div class="my-4 chart-container p-3 rounded mobile-chart" style="display: none;">
+        <canvas id="pieChart"></canvas>
+        <p class="text-center mt-2"><strong>Total Amount Breakdown</strong></p>
     </div>
 
     <div class="mb-3">
@@ -119,8 +126,15 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    var ctx = document.getElementById('amortizationChart').getContext('2d');
+    // Responsive chart display
+    function handleResponsiveCharts() {
+        const isMobile = window.innerWidth <= 767;
+        document.querySelector('.desktop-chart').style.display = isMobile ? 'none' : 'block';
+        document.querySelector('.mobile-chart').style.display = isMobile ? 'block' : 'none';
+    }
 
+    // Line chart for desktop
+    var ctx = document.getElementById('amortizationChart').getContext('2d');
     var amortizationChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -181,7 +195,7 @@
                         usePointStyle: true,
                         pointStyle: 'circle'
                     },
-                    onClick: function (e, legendItem) {
+                    onClick: function(e, legendItem) {
                         const index = legendItem.datasetIndex;
                         const meta = amortizationChart.getDatasetMeta(index);
                         meta.hidden = meta.hidden === null ? true : !meta.hidden;
@@ -207,12 +221,56 @@
         }
     });
 
-    amortizationChart.data.datasets.forEach((dataset, index) => {
-        const meta = amortizationChart.getDatasetMeta(index);
-        meta.hidden = dataset.hidden || false;
+    // Pie chart for mobile
+    var pieCtx = document.getElementById('pieChart').getContext('2d');
+    var pieChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Principal', 'Interest'],
+            datasets: [{
+                data: [
+                    {{ total_principal }},
+                    {{ total_interest }}
+                ],
+                backgroundColor: [
+                    'rgba(0, 128, 0, 0.7)',
+                    'rgba(255, 0, 0, 0.7)'
+                ],
+                borderColor: [
+                    'green',
+                    'red'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': {{ currency_symbol }}';
+                            }
+                            if (context.parsed !== null) {
+                                label += new Intl.NumberFormat('en-US', { 
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2 
+                                }).format(context.parsed);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
     });
-    amortizationChart.update();
 
+    // Functions for the line chart
     function toggleDatasetVisibility(datasetLabel) {
         const datasetIndex = amortizationChart.data.datasets.findIndex(
             dataset => dataset.label === datasetLabel
@@ -231,6 +289,10 @@
         });
         amortizationChart.update();
     }
+
+    // Handle responsive display
+    window.addEventListener('load', handleResponsiveCharts);
+    window.addEventListener('resize', handleResponsiveCharts);
 </script>
 
 </body>
