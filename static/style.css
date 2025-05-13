@@ -209,6 +209,7 @@ canvas {
     justify-content: center;
 }
 
+<<<<<<< HEAD
 /* === Responsive Chart Styling === */
 .desktop-chart, .mobile-chart {
     transition: display 0.3s ease;
@@ -302,6 +303,10 @@ canvas {
         width: 180px !important;
     }
     
+=======
+@media (max-width: 768px) {
+
+>>>>>>> 45dccacf596bd0fdbf54aa729dc65a5104c6092d
     label {
         color: white;
     }
@@ -315,6 +320,7 @@ canvas {
     .header img {
         display: none;
     }
+<<<<<<< HEAD
 }
 
 @media only screen and (max-width: 480px) {
@@ -341,6 +347,11 @@ canvas {
     
     h1 {
         font-size: 28px;
+=======
+
+    h1 {
+        font-size: 30px;
+>>>>>>> 45dccacf596bd0fdbf54aa729dc65a5104c6092d
         color: white;
         margin-top: 0;
         margin-bottom: 30px;
@@ -348,10 +359,19 @@ canvas {
         z-index: 2;
         position: relative;
     }
+<<<<<<< HEAD
     
     .header {
         height: auto;
         padding-top: 180px;
+=======
+}
+
+@media (max-width: 480px) {
+    .header {
+        height: auto;
+        padding-top: 180px; /* Slightly increased */
+>>>>>>> 45dccacf596bd0fdbf54aa729dc65a5104c6092d
         position: relative;
     }
 
@@ -362,6 +382,7 @@ canvas {
     .header h1 {
         font-size: 36px;
     }
+<<<<<<< HEAD
     
     .accordion-button {
         padding: 8px;
@@ -379,3 +400,22 @@ canvas {
         width: 90%;
     }
 }
+=======
+
+    h1 {
+        font-size: 28px;
+        color: white;
+        margin-top: 0;
+        margin-bottom: 30px;
+        padding-top: 0;
+        z-index: 2;
+        position: relative;
+    }
+
+    label {
+        color: white;
+    }
+}
+
+
+>>>>>>> 45dccacf596bd0fdbf54aa729dc65a5104c6092d
