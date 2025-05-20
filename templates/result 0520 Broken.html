@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google Analytics tag -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FQBCG71PR9"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-FQBCG71PR9');
-    </script>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FQBCG71PR9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-FQBCG71PR9');
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mortgage Amortization Results</title>
@@ -210,8 +211,8 @@
                     onClick: function(e, legendItem) {
                         const index = legendItem.datasetIndex;
                         const meta = amortizationChart.getDatasetMeta(index);
-                        meta.hidden = !meta.hidden;
-                        amortizationChart.update();         
+                        meta.hidden = meta.hidden === null ? true : !meta.hidden;
+                        amortizationChart.update();
                     }
                 }
             },
@@ -259,8 +260,8 @@
             responsive: true,
             plugins: {
                 legend: {
-                    position: 'bottom',
-                    onClick: null
+                    position: 'bottom'
+                    onClick: null // disables toggling visibility
                 },
                 tooltip: {
                     callbacks: {
@@ -283,28 +284,23 @@
         }
     });
 
+    // Functions for the line chart
     function toggleDatasetVisibility(datasetLabel) {
-    amortizationChart.data.datasets.forEach(function(dataset, idx) {
-        if (dataset.label === datasetLabel) {
-            const meta = amortizationChart.getDatasetMeta(idx);
-
-            // If it's the first toggle, initialize `meta.hidden` based on dataset.hidden
-            if (meta.hidden === null) {
-                meta.hidden = !dataset.hidden;
-            } else {
-                meta.hidden = !meta.hidden;
-            }
-
+        const datasetIndex = amortizationChart.data.datasets.findIndex(
+            dataset => dataset.label === datasetLabel
+        );
+        if (datasetIndex !== -1) {
+            const meta = amortizationChart.getDatasetMeta(datasetIndex);
+            meta.hidden = meta.hidden === null ? true : !meta.hidden;
             amortizationChart.update();
         }
-    });
-}
+    }
 
-    // Fixed showAll function that properly shows all datasets
     function showAll() {
-        for (var i = 0; i < amortizationChart.data.datasets.length; i++) {
-            amortizationChart.getDatasetMeta(i).hidden = false;
-        }
+        amortizationChart.data.datasets.forEach((dataset, index) => {
+            const meta = amortizationChart.getDatasetMeta(index);
+            meta.hidden = false;
+        });
         amortizationChart.update();
     }
 
