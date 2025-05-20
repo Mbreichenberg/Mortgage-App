@@ -8,6 +8,8 @@ html, body {
     background-color: lightblue;
     opacity: 0;
     animation: fadeIn 2s ease forwards;
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: bold;
 }
 
 /* === Index Page Background === */
@@ -58,17 +60,16 @@ form.form {
     margin-top: 1.25rem;
     font-size: 1.125rem;
     padding: 0.625rem 1.25rem;
-    font-family: 'Caveat', cursive;
 }
 
 
 .input_box {
     margin-top: 1.25rem;
     font-size: 1rem;
+    font-weight: bold;
     padding: 0.5rem 1rem;
     background-color: #fff4e6;
     border: 2px solid black;
-    font-family: 'Caveat', cursive;
     box-shadow: 3px 3px 0 0 black;
     width: 70%;
     max-width: 320px;
@@ -154,7 +155,6 @@ button {
     background-color: #fff4e6;
     border: 2px solid black;
     border-radius: 20px;
-    font-family: 'Caveat', cursive;
     box-shadow: 3px 3px 0px 0px black;
 }
 
@@ -171,7 +171,6 @@ button:hover {
     background-color: #fff4e6;
     border: 2px solid black;
     border-radius: 20px;
-    font-family: 'Caveat', cursive;
     box-shadow: 3px 3px 0px 0px black;
     transition: all 0.15s ease;
     margin-top: 30px;
