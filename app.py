@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, redirect, session, jsonify
+from flask import Flask, render_template, request, send_file, session
 import openpyxl
 import xlsxwriter
 import pandas as pd
@@ -6,38 +6,47 @@ import io
 import requests
 from helper import create_excel
 from decimal import Decimal, getcontext
-from jinja2 import Template
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # Load variables from .env
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY") #CREATE A secret key
-
-
-# Set a high precision for financial calculations
-getcontext().prec = 28
-
-# Initialize Flask app
-app = Flask(__name__)
-app.secret_key = 'AylaJunoCats'  # Required to use sessions
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+app.secret_key = 'AylaJunoCats'
 
+getcontext().prec = 28  # Set precision for financial calculations
 
-# Registering a custom filter for string formatting and rounding
-@app.template_filter('stringformat')
-def string_format(value):
-    """Formats value as string with commas and 2 decimal places."""
-    if isinstance(value, Decimal):
-        value = value.quantize(Decimal('0.01'))
-    return f"{value:,.2f}"
+# Global currency code and symbol maps
+CURRENCY_CODE_MAP = {
+    '1': 'USD',
+    '2': 'BRL',
+    '3': 'EUR',
+    '4': 'JPY',
+    '5': 'AUD',
+    '6': 'MXN',
+    '7': 'CAD'
+}
 
-# Your ExchangeRate API Key
+CURRENCY_SYMBOL_MAP = {
+    'USD': '$',
+    'BRL': 'R$',
+    'EUR': '€',
+    'JPY': '¥',
+    'AUD': 'A$',
+    'MXN': 'Mex$',
+    'CAD': 'C$'
+}
+
+# Exchange rate API config
 API_KEY = '77b589a6647cc952825a4fbe'
 BASE_URL = 'https://api.exchangerate-api.com/v4/latest/'
 
-# Mortgage Amortization Schedule Calculator
+@app.template_filter('stringformat')
+def string_format(value):
+    if isinstance(value, Decimal):
+        value = value.quantize(Decimal('0.01'))
+    return f"{value:,.2f}"
 
 def calculate_amortization_schedule(principal, annual_interest_rate, years, currency_symbol):
     schedule = []
@@ -81,13 +90,12 @@ def index():
         except Exception as e:
             return f"Error converting input values: {e}"
 
-        currency_code_map = {'1': 'USD', '2': 'BRL', '3': 'EUR'}
-        base_currency_code = currency_code_map.get(currency_choice, 'USD')
+        base_currency_code = CURRENCY_CODE_MAP.get(currency_choice, 'USD')
+        currency_symbol = CURRENCY_SYMBOL_MAP.get(base_currency_code, '$')
+
         session['base_currency'] = base_currency_code
         session['original_principal'] = str(principal)
         session['original_currency'] = base_currency_code
-
-        currency_symbol = {'1': '$', '2': 'R$', '3': '€'}.get(currency_choice, '$')
 
         try:
             monthly_payment, schedule, total_principal, total_interest = calculate_amortization_schedule(
@@ -106,6 +114,7 @@ def index():
                                currency_choice=base_currency_code,
                                total_principal=total_principal,
                                total_interest=total_interest)
+
     return render_template('index.html')
 
 @app.route('/convert_results', methods=['POST'])
@@ -121,14 +130,14 @@ def convert_results():
         return f"Error with form inputs: {e}"
 
     try:
-        response = requests.get(f'https://api.exchangerate-api.com/v4/latest/{base_currency}')
+        response = requests.get(f'{BASE_URL}{base_currency}')
         rates = response.json().get('rates', {})
         conversion_rate = Decimal(str(rates.get(target_currency, 1)))
     except Exception as e:
         return f"Error fetching conversion rates: {e}"
 
     converted_principal = (principal * conversion_rate).quantize(Decimal('0.01'))
-    currency_symbol = {'USD': '$', 'BRL': 'R$', 'EUR': '€'}.get(target_currency, '$')
+    currency_symbol = CURRENCY_SYMBOL_MAP.get(target_currency, '$')
 
     try:
         monthly_payment, schedule, total_principal, total_interest = calculate_amortization_schedule(
@@ -160,7 +169,7 @@ def download():
     except Exception as e:
         return f"Error with form inputs: {e}"
 
-    currency_symbol = {'USD': '$', 'BRL': 'R$', 'EUR': '€'}.get(currency_choice, '$')
+    currency_symbol = CURRENCY_SYMBOL_MAP.get(currency_choice, '$')
 
     try:
         monthly_payment, schedule, total_principal, total_interest = calculate_amortization_schedule(
@@ -179,4 +188,4 @@ def download():
     )
 
 # if __name__ == '__main__':
-    # app.run(debug=True)
+#     app.run(debug=True)
